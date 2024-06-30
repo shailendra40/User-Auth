@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserAuthDetails {
+  id         Int      @id @default(autoincrement())
+  name       String?
+  username   String
+  email      String   @unique
+  password   String
+  profileImg String[] // Array of strings to store image paths
+  documents  String[] // Array of strings to store paths to uploaded documents
+  houses     House[] // One-to-many relation with House model
+  Otps       Otp[] // One-to-many relation with Otp model
+  createdAt  DateTime @default(now())
+  isEmailVerified Boolean  @default(false) // New field to track email verification status
+}
+
+model House {
+  id          Int             @id @default(autoincrement())
+  userId      Int // Foreign key to link houses to users
+  // ownerId     Int     // Reference to the UserAuthDetails
+  name        String
+  address     String
+  phoneNumber String          @unique
+  // phoneNumber Int             @unique
+  createdAt   DateTime        @default(now())
+  // user        UserAuthDetails @relation(fields: [userId], references: [id])
+  user        UserAuthDetails @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // owner       UserAuthDetails @relation(fields: [ownerId], references: [id])
+}
+
+// model HouseImage {
+//   id        Int      @id @default(autoincrement())
+//   houseId   Int
+//   imageUrl  String
+//   createdAt DateTime @default(now())
+
+//   house     House @relation(fields: [houseId], references: [id])
+// }
+
+model Otp {
+  id        Int             @id @default(autoincrement())
+  otp       Int
+  userId    Int
+  createdAt DateTime        @default(now())
+  user      UserAuthDetails @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
